@@ -9,7 +9,6 @@ def connect():
         from passwords import mongodb_key
         client = pymongo.MongoClient(mongodb_key)
         db = client['Project_for_coffee_bot']   # Получаем базу данных
-        collection = db['FreeCluster']
         print("Успешное подключение к базе данных")
         return db
     except Exception as ex:
@@ -31,19 +30,20 @@ def add_or_remove_request(name_of_office, call, bot):
         assert quantity_of_requests <= 1, "Количество заявок не может быть больше 2-ух"
         if quantity_of_requests == 1:  # Если заявка в данном офисе нашлась
             bot.send_message(call.message.chat.id,
-                             "Поздравляю! Вы нашли партнера для перерыва\n"
-                             "Вот его контакт: "+str(db.posts.find_one({'name_of_office': name_of_office})['nickname']))
+                             "Поздравляю! Вы нашли партнера для перерыва ☕\n"
+                             "Вот его контакт: @"
+                             +str(db.posts.find_one({'name_of_office': name_of_office})['nickname']) + " 🚶")
             bot.send_message(db.posts.find_one({'name_of_office': name_of_office})['message_chat_id'],
-                             "Поздравляю! Вы нашли партнера для перерыва\n"
-                             "Вот его контакт: " + str(call.message.chat.username))
+                             "Поздравляю! Вы нашли партнера для перерыва ☕\n"
+                             "Вот его контакт: @"+str(call.message.chat.username)+" 🚶")
             db.posts.delete_one({'name_of_office': name_of_office})
         else:
             new_request = {"message_chat_id": call.message.chat.id,
                            "name_of_office": name_of_office,
                            "nickname": call.message.chat.username
                            }
-            bot.send_message(call.message.chat.id,"Заявка отправлена, как только найдется компаньон я сразу сообщу"
-                                                  ", до связи! :)\n")
+            bot.send_message(call.message.chat.id, "Ваша заявка отправлена! Как только сегодня "
+                                                   "найдется второй желающий, я сразу сообщу. До связи!🙂\n")
             db.posts.insert_one(new_request)
     except Exception as ex:
         import logging
