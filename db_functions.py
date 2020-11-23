@@ -8,7 +8,8 @@ def connect():
         import pymongo
         from passwords import mongodb_key
         client = pymongo.MongoClient(mongodb_key)
-        db = client['PROJECT_FOR_COFFEE_BOT']   # Получаем базу данных
+        db = client['Project_for_coffee_bot']   # Получаем базу данных
+        collection = db['FreeCluster']
         print("Успешное подключение к базе данных")
         return db
     except Exception as ex:
@@ -26,22 +27,27 @@ def add_or_remove_request(name_of_office, call, bot):
 
     try:
         db = connect()
-        #for instance in db.posts.find({}):
-         #   print(instance)
-        # a = db.posts.count({"name_of_office": name_of_office})
-        # print(a)
-        print(db.posts.count({"name_of_office": name_of_office}), " <- amount requests")
-        if not (db.posts.count({"name_of_office": name_of_office})):  # Если заявка в данном офисе нашлась
-            bot.send_message(call.message.chat.id, "Поздравляю! Ты нашёл партнера для перерыва")
-            # bot.send_message(element_in_db("message_chat_id"), "Поздравляю! Ты нашёл партнера для перерыва")
-            # db.posts.delete_one(element_in_db)
+        quantity_of_requests = db.posts.count({"name_of_office": name_of_office})   # Количество заявок в бд
+        assert quantity_of_requests <= 1, "Количество заявок не может быть больше 2-ух"
+        if quantity_of_requests == 1:  # Если заявка в данном офисе нашлась
+            bot.send_message(call.message.chat.id,
+                             "Поздравляю! Вы нашли партнера для перерыва\n"
+                             "Вот его контакт: "+str(db.posts.find_one({'name_of_office': name_of_office})['nickname']))
+            bot.send_message(db.posts.find_one({'name_of_office': name_of_office})['message_chat_id'],
+                             "Поздравляю! Вы нашли партнера для перерыва\n"
+                             "Вот его контакт: " + str(call.message.chat.username))
+            db.posts.delete_one({'name_of_office': name_of_office})
         else:
             new_request = {"message_chat_id": call.message.chat.id,
                            "name_of_office": name_of_office,
-                           "leader_name": call.message.chat.username
+                           "nickname": call.message.chat.username
                            }
-            print("Вставляем заявку")
+            bot.send_message(call.message.chat.id,"Заявка отправлена, как только найдется компаньон я сразу сообщу"
+                                                  ", до связи! :)\n")
             db.posts.insert_one(new_request)
     except Exception as ex:
         import logging
         logging.error("\nОшибка в add_or_remove_request! "+ str(ex))
+        bot.send_message(call.message.chat.id, "Произошла ошибка, связанная с базой данных,"
+                                               " стоит обратиться к @tatyanagolovina1 или к @danya04."
+                                               "Сейчас можно воспользоваться командой /start")

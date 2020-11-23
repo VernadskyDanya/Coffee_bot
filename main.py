@@ -28,7 +28,6 @@ FUNCTIONS = dict(start=bot_functions.start,
 def callback_query(call):
     """Обработик inline-кнопок"""
     try:
-        # print(type(FUNCTIONS[call.data]))
         if type(FUNCTIONS[call.data]) is tuple:     # Если у функции есть доп параметр: например имя офиса
             print("Вызывается функция с доп параметром")
             FUNCTIONS[call.data][0](FUNCTIONS[call.data][1], call, bot)
