@@ -12,8 +12,8 @@ def start(chat_id, bot):
 
 def choose_department(message_chat_id, bot):
     """Предлагает пользователю выбрать офис"""
-    button1 = types.InlineKeyboardButton(text="Большая морская", callback_data="big_morsk")
-    button2 = types.InlineKeyboardButton(text="Малая морская", callback_data="small_morsk")
+    button1 = types.InlineKeyboardButton(text="Большая морская 🌊", callback_data="big_morsk")
+    button2 = types.InlineKeyboardButton(text="Малая морская 🌴", callback_data="small_morsk")
     markup = types.InlineKeyboardMarkup()
     markup.row(button1, button2)
-    bot.send_message(message_chat_id, "Выберите отдел:", reply_markup=markup)
+    bot.send_message(message_chat_id, "Выберите отдел: 🏬", reply_markup=markup)
