@@ -42,7 +42,7 @@ def add_or_remove_request(name_of_office, call, bot):
                            "name_of_office": name_of_office,
                            "nickname": call.message.chat.username
                            }
-            bot.send_message(call.message.chat.id, "Ваша заявка отправлена! Как только сегодня "
+            bot.send_message(call.message.chat.id, "Ваша заявка отправлена!\nКак только сегодня "
                                                    "найдется второй желающий, я сразу сообщу. До связи!🙂\n")
             db.posts.insert_one(new_request)
     except Exception as ex:
