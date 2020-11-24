@@ -1,6 +1,14 @@
 """ Модуль для работы с базой данных. Используется MongoDB """
 
 
+class BdError(Exception):
+    """Класс для исключения при использовании бд"""
+    def __init__(self, ex, text, bot_msg):
+        self.ex = ex
+        self.text = text
+        self.bot_msg = bot_msg
+
+
 def connect():
     """Подключаемся к нашей бд
        Функция возвращает объект, предствляющий базу данных"""
@@ -12,8 +20,9 @@ def connect():
         print("Успешное подключение к базе данных")
         return db
     except Exception as ex:
-        import logging
-        logging.error(ex)
+        raise BdError(ex=ex, text="Ошибка подключения к базе данных!",
+                      bot_msg="Ошибка подключения к базе данных.\nCтоит обратиться к "
+                           "@tatyanagolovina1 или к @danya04. Сейчас можно воспользоваться командой /start")
 
 
 def add_or_remove_request(name_of_office, call, bot):
@@ -45,6 +54,10 @@ def add_or_remove_request(name_of_office, call, bot):
             bot.send_message(call.message.chat.id, "Ваша заявка отправлена!\nКак только сегодня "
                                                    "найдется второй желающий, я сразу сообщу. До связи!🙂\n")
             db.posts.insert_one(new_request)
+    except BdError as ex:
+        import logging
+        logging.error(str(ex.text) + " " + str.capitalize(str(ex.ex)))
+        bot.send_message(call.message.chat.id, ex.bot_msg)
     except Exception as ex:
         import logging
         logging.error("\nОшибка в add_or_remove_request! "+ str(ex))
