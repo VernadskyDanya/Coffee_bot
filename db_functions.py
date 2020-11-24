@@ -8,6 +8,9 @@ class BdError(Exception):
         self.text = text
         self.bot_msg = bot_msg
 
+    def __str__(self):
+        return repr(str(self.ex)+". "+self.text)
+
 
 def connect():
     """Подключаемся к нашей бд
@@ -51,7 +54,7 @@ def add_or_remove_request(name_of_office, call, bot):
                            "name_of_office": name_of_office,
                            "nickname": call.message.chat.username
                            }
-            bot.send_message(call.message.chat.id, "Ваша заявка отправлена!\nКак только сегодня "
+            bot.send_message(call.message.chat.id, "Ваша заявка отправлена!📩️\nКак только сегодня "
                                                    "найдется второй желающий, я сразу сообщу. До связи!🙂\n")
             db.posts.insert_one(new_request)
     except BdError as ex:
@@ -64,3 +67,22 @@ def add_or_remove_request(name_of_office, call, bot):
         bot.send_message(call.message.chat.id, "Произошла ошибка, связанная с базой данных,"
                                                " стоит обратиться к @tatyanagolovina1 или к @danya04."
                                                "Сейчас можно воспользоваться командой /start")
+
+
+def delete_irrelevant_requests():
+    """Функция, которая удаляет неактуальные заявки и информирует от этом.
+       Запускается сервером в конце рабочего дня"""
+
+    import telebot
+    import passwords
+    bot = telebot.TeleBot(passwords.key)
+
+    db = connect()
+    try:
+        for instance in db.posts.find({}):
+            bot.send_message(instance['message_chat_id'], "Увы, сегодня вам не нашлось пары.\n"
+                                                          "Отправь новую заявку завтра!")
+            db.posts.delete_one(instance)
+    except Exception as ex:
+        import logging
+        logging.error("\nОшибка удаления " + str(ex))
