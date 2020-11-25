@@ -13,7 +13,8 @@ def delete_irrelevant_requests():
         db = connect()
         for instance in db.posts.find({}):
             bot.send_message(instance['message_chat_id'], "🌃 Увы, сегодня вам не нашлось пары 🌃\n"
-                                                          "🌅 Отправь новую заявку завтра! (/start) 🌅")
+                                                          "🌅 Отправь новую заявку на завтра прямо сейчас! 🌅\n"
+                                                          "(👉 /start)")
             db.posts.delete_one(instance)
     except Exception as ex:
         import logging
